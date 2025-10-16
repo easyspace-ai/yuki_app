@@ -1,195 +1,81 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useChat } from '@ai-sdk/react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { 
-  Send, 
-  Bot, 
-  User, 
-  Copy, 
-  RefreshCw, 
-  Sparkles,
-  Settings,
-  X,
-  Loader2,
-  MessageSquare,
-  Trash2,
-  Download,
-  Upload
-} from 'lucide-react';
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from '@/components/ai-elements/conversation';
+import { Message, MessageContent } from '@/components/ai-elements/message';
+import {
+  PromptInput,
+  PromptInputBody,
+  PromptInputTextarea,
+  PromptInputFooter,
+  PromptInputTools,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectValue,
+  PromptInputSubmit,
+  type PromptInputMessage,
+} from '@/components/ai-elements/prompt-input';
+import { Action, Actions } from '@/components/ai-elements/actions';
+import { Response } from '@/components/ai-elements/response';
+import { CopyIcon, RefreshCcwIcon, Settings, X, MessageSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import { useModelSettings } from '@/hooks/useModelSettings';
 
-interface AIChatSidebarProps {
+interface AIChatSidebarV2Props {
   className?: string;
 }
 
-export const AIChatSidebarV2 = ({ className }: AIChatSidebarProps) => {
-  const [input, setInput] = useState('');
+export const AIChatSidebarV2 = ({ className }: AIChatSidebarV2Props) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
-
-  // 使用 AI SDK 的 useChat hook
-  const {
-    messages,
-    input: chatInput,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
-    error,
-    reload,
-    stop,
-    append,
-    setMessages
-  } = useChat({
+  const { settings } = useModelSettings();
+  
+  const { messages, sendMessage, status, regenerate } = useChat({
     api: '/api/chat',
-    initialMessages: [
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content: '你好！我是你的 AI 写作助手，可以帮助你：\n\n• 📝 文档创作和编辑\n• 🎯 内容优化建议\n• 📊 结构化写作指导\n• 🔍 语法和风格检查\n\n有什么我可以帮助你的吗？',
-      }
-    ],
-    onError: (error) => {
-      console.error('Chat error:', error);
-      toast({
-        title: "连接失败",
-        description: "无法连接到 AI 服务，请检查网络连接",
-        variant: "destructive",
-      });
+    body: {
+      model: settings.provider === 'builtin' ? 'gpt-4o-mini' : `${settings.provider}/${settings.model}`,
+      baseUrl: settings.baseUrl,
+      apiToken: settings.apiToken,
     },
-    onFinish: () => {
-      setIsTyping(false);
-    },
-    onResponse: () => {
-      setIsTyping(true);
-    }
   });
 
-  const handleSendMessage = async (e?: React.FormEvent) => {
-    if (!input.trim() || isLoading) return;
-
-    if (e) {
-      e.preventDefault();
-    }
-
-    const userMessage = input.trim();
-    setInput('');
-
-    // 使用 append 方法发送消息
-    await append({
-      role: 'user',
-      content: userMessage,
-    });
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const copyToClipboard = async (content: string) => {
-    try {
-      await navigator.clipboard.writeText(content);
-      toast({
-        title: "已复制",
-        description: "内容已复制到剪贴板",
-      });
-    } catch (error) {
-      toast({
-        title: "复制失败",
-        description: "无法复制内容到剪贴板",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const clearChat = () => {
-    setMessages([
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content: '你好！我是你的 AI 写作助手，可以帮助你：\n\n• 📝 文档创作和编辑\n• 🎯 内容优化建议\n• 📊 结构化写作指导\n• 🔍 语法和风格检查\n\n有什么我可以帮助你的吗？',
-      }
-    ]);
-    toast({
-      title: "对话已清空",
-      description: "开始新的对话",
-    });
-  };
-
-  const exportChat = () => {
-    const chatData = {
-      timestamp: new Date().toISOString(),
-      messages: messages.map(msg => ({
-        role: msg.role,
-        content: msg.content,
-        timestamp: new Date().toISOString()
-      }))
-    };
+  const handleSubmit = (message: PromptInputMessage) => {
+    if (!message.text?.trim()) return;
     
-    const blob = new Blob([JSON.stringify(chatData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ai-chat-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "导出成功",
-      description: "聊天记录已导出",
+    sendMessage({
+      text: message.text,
     });
   };
 
-  // 自动滚动到底部
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      }
-    }
-  }, [messages, isLoading]);
-
-  // 快速回复建议
-  const quickReplies = [
-    "帮我写一份会议纪要",
-    "优化这段文字的表达",
-    "检查语法错误",
-    "提供写作建议"
+  const models = [
+    { name: '内置模型', value: 'builtin' },
+    { name: 'Ollama', value: 'ollama' },
+    { name: 'SiliconFlow', value: 'siliconflow' },
   ];
-
-  const handleQuickReply = (reply: string) => {
-    setInput(reply);
-  };
 
   return (
     <div className={cn(
-      "h-full bg-background border-l border-border flex flex-col transition-all duration-200 ease-out",
-      isExpanded ? "w-80" : "w-12",
+      "h-full w-full bg-background border-l border-border flex flex-col transition-all duration-200 ease-out",
       className
     )}>
       {/* 头部 */}
-      <div className="flex items-center justify-between p-3 border-b border-border bg-muted/30">
+      <div className="flex items-center justify-between p-3 border-b border-border bg-muted/30 flex-shrink-0">
         {isExpanded && (
           <div className="flex items-center space-x-2">
             <div className="flex items-center justify-center w-6 h-6 rounded-md bg-primary text-primary-foreground">
-              <Sparkles className="w-3 h-3" />
+              <MessageSquare className="w-3 h-3" />
             </div>
             <span className="text-sm font-medium text-foreground">AI 写作助手</span>
-            {isLoading && (
+            {status === 'streaming' && (
               <Badge variant="secondary" className="text-xs">
                 <Loader2 className="w-2 h-2 animate-spin mr-1" />
                 思考中
@@ -199,39 +85,6 @@ export const AIChatSidebarV2 = ({ className }: AIChatSidebarProps) => {
         )}
         
         <div className="flex items-center space-x-1">
-          {isExpanded && (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearChat}
-                className="h-6 w-6 p-0"
-                title="清空对话"
-                disabled={isLoading}
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={exportChat}
-                className="h-6 w-6 p-0"
-                title="导出对话"
-                disabled={messages.length <= 1}
-              >
-                <Download className="w-3 h-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                title="设置"
-                disabled={isLoading}
-              >
-                <Settings className="w-3 h-3" />
-              </Button>
-            </>
-          )}
           <Button
             variant="ghost"
             size="sm"
@@ -245,170 +98,96 @@ export const AIChatSidebarV2 = ({ className }: AIChatSidebarProps) => {
       </div>
 
       {isExpanded && (
-        <>
-          {/* 消息区域 */}
-          <ScrollArea ref={scrollAreaRef} className="flex-1 p-3">
-            <div className="space-y-4">
-              {messages.map((message, index) => (
-                <div
-                  key={message.id}
-                  className={cn(
-                    "flex gap-3 group",
-                    message.role === 'user' ? "justify-end" : "justify-start"
-                  )}
-                >
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* 聊天内容区域 */}
+          <Conversation className="flex-1">
+            <ConversationContent>
+              {messages.length === 0 && (
+                <Message from="assistant">
+                  <MessageContent>
+                    <Response>
+                      你好！我是你的 AI 写作助手，专门帮助提升文档质量。
+
+                      我可以帮你：
+                      • 📝 优化文本表达
+                      • 🎯 提供写作建议
+                      • 📊 分析文档结构
+                      • ✨ 生成创意内容
+                    </Response>
+                  </MessageContent>
+                </Message>
+              )}
+              
+              {messages.map((message) => (
+                <div key={message.id}>
+                  <Message from={message.role}>
+                    <MessageContent>
+                      <Response>{message.content}</Response>
+                    </MessageContent>
+                  </Message>
+                  
                   {message.role === 'assistant' && (
-                    <div className="flex-shrink-0 w-6 h-6 rounded-md bg-primary text-primary-foreground flex items-center justify-center">
-                      <Bot className="w-3 h-3" />
-                    </div>
-                  )}
-                  
-                  <div className={cn(
-                    "max-w-[80%] rounded-lg px-3 py-2 text-sm relative",
-                    message.role === 'user' 
-                      ? "bg-primary text-primary-foreground" 
-                      : "bg-muted text-foreground"
-                  )}>
-                    <div className="whitespace-pre-wrap leading-relaxed">
-                      {message.content}
-                    </div>
-                    
-                    {/* 操作按钮 */}
-                    <div className={cn(
-                      "flex items-center space-x-1 mt-2 transition-opacity",
-                      message.role === 'assistant' 
-                        ? "opacity-0 group-hover:opacity-100" 
-                        : "opacity-0 group-hover:opacity-100"
-                    )}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyToClipboard(message.content)}
-                        className="h-5 w-5 p-0"
-                        title="复制内容"
+                    <Actions className="mt-2">
+                      <Action
+                        onClick={() => regenerate()}
+                        label="重试"
                       >
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                      {message.role === 'assistant' && index === messages.length - 1 && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => reload()}
-                          disabled={isLoading}
-                          className="h-5 w-5 p-0"
-                          title="重新生成"
-                        >
-                          <RefreshCw className="w-3 h-3" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {message.role === 'user' && (
-                    <div className="flex-shrink-0 w-6 h-6 rounded-md bg-muted text-muted-foreground flex items-center justify-center">
-                      <User className="w-3 h-3" />
-                    </div>
+                        <RefreshCcwIcon className="size-3" />
+                      </Action>
+                      <Action
+                        onClick={() => navigator.clipboard.writeText(message.content)}
+                        label="复制"
+                      >
+                        <CopyIcon className="size-3" />
+                      </Action>
+                    </Actions>
                   )}
                 </div>
               ))}
               
-              {isLoading && (
-                <div className="flex gap-3 justify-start">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-md bg-primary text-primary-foreground flex items-center justify-center">
-                    <Bot className="w-3 h-3" />
-                  </div>
-                  <div className="bg-muted text-foreground rounded-lg px-3 py-2 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      <span>AI 正在思考...</span>
-                    </div>
-                  </div>
+              {status === 'submitted' && (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="ml-2 text-sm text-muted-foreground">AI 正在思考...</span>
                 </div>
               )}
-
-              {/* 错误状态 */}
-              {error && (
-                <div className="flex gap-3 justify-start">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-md bg-destructive text-destructive-foreground flex items-center justify-center">
-                    <X className="w-3 h-3" />
-                  </div>
-                  <div className="bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span>连接失败，请重试</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => reload()}
-                        className="h-5 w-5 p-0 ml-2"
-                      >
-                        <RefreshCw className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 快速回复建议 */}
-              {messages.length === 1 && (
-                <div className="space-y-2">
-                  <div className="text-xs text-muted-foreground">快速开始：</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {quickReplies.map((reply, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleQuickReply(reply)}
-                        className="text-xs h-8 p-2 text-left justify-start"
-                        disabled={isLoading}
-                      >
-                        {reply}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-
-          <Separator />
+            </ConversationContent>
+            <ConversationScrollButton />
+          </Conversation>
 
           {/* 输入区域 */}
-          <div className="p-3">
-            <form onSubmit={handleSendMessage} className="space-y-2">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="输入消息... (Shift+Enter 换行，Enter 发送)"
-                className="min-h-[60px] max-h-[120px] resize-none"
-                disabled={isLoading}
-              />
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-muted-foreground">
-                  {isLoading ? "AI 正在回复..." : "按 Enter 发送，Shift+Enter 换行"}
-                </div>
-                <Button
-                  type="submit"
-                  disabled={!input.trim() || isLoading}
-                  size="sm"
-                  className="h-8"
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-            </form>
-            
-            <div className="mt-2 text-xs text-muted-foreground text-center">
-              AI 可能产生不准确的信息，请验证重要内容
-            </div>
+          <div className="p-3 flex-shrink-0 border-t">
+            <PromptInput onSubmit={handleSubmit}>
+              <PromptInputBody>
+                <PromptInputTextarea placeholder="输入消息... (Shift+Enter 换行，Enter 发送)" />
+              </PromptInputBody>
+              <PromptInputFooter>
+                <PromptInputTools>
+                  <PromptInputModelSelect
+                    value={settings.provider}
+                    onValueChange={(value) => {
+                      // 这里可以触发模型切换逻辑
+                    }}
+                  >
+                    <PromptInputModelSelectTrigger>
+                      <PromptInputModelSelectValue />
+                    </PromptInputModelSelectTrigger>
+                    <PromptInputModelSelectContent>
+                      {models.map((model) => (
+                        <PromptInputModelSelectItem key={model.value} value={model.value}>
+                          {model.name}
+                        </PromptInputModelSelectItem>
+                      ))}
+                    </PromptInputModelSelectContent>
+                  </PromptInputModelSelect>
+                </PromptInputTools>
+                <PromptInputSubmit disabled={status === 'streaming'} status={status} />
+              </PromptInputFooter>
+            </PromptInput>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
 };
+
