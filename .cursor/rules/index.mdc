@@ -1,0 +1,33 @@
+---
+mdc: 1
+title: Obsidian Canvas Kit – 规则索引
+scope: project
+files: ["src/**/*", "index.html", "public/**/*", "tailwind.config.ts", "tsconfig*.json", "vite.config.ts"]
+priority: highest
+---
+
+## 目的
+为 Cursor 提供统一的工程规范索引，确保在生成/编辑代码时遵循设计系统与工程质量闸门。
+
+## 规则目录
+- foundations: 请阅读 `./foundations.mdc`
+- components: 请阅读 `./components.mdc`
+- interaction: 请阅读 `./interaction.mdc`
+- a11y-seo: 请阅读 `./a11y-seo.mdc`
+- performance: 请阅读 `./performance.mdc`
+- code-style: 请阅读 `./code-style.mdc`
+- review-checklist: 请阅读 `./review-checklist.mdc`
+
+## 全局指令
+1. 任何代码生成或编辑，必须优先遵循 `foundations.mdc` 的设计令牌与 8px 网格。
+2. UI 组件优先选用 `shadcn/ui` 组合件，避免重复造轮子，遵循 `components.mdc` 的使用规范。
+3. 交互、动效与状态反馈必须满足 `interaction.mdc`，并在复杂流程中提供清晰的空/加载/错误/成功状态。
+4. 可访问性与 SEO 要求达成 `a11y-seo.mdc`（至少 WCAG 2.1 AA），语义化与可聚焦性不可妥协。
+5. 性能预算与质量闸门以 `performance.mdc` 为准，交付前通过关键基线（LCP/CLS/JS 体积等）。
+6. 代码必须符合 `code-style.mdc` 的风格与架构约束，避免不必要抽象与深嵌套。
+7. 在合并前使用 `review-checklist.mdc` 逐项自检与评审。
+
+## 输出格式
+- 生成 TSX/TS 时，内联注释仅用于非显而易见的设计或安全约束。
+- 展示现有代码片段时，使用带行号的代码引用格式。
+- 提议新代码时使用标准 Markdown 代码块（语言标签必须正确）。

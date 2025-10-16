@@ -1,0 +1,32 @@
+---
+mdc: 1
+title: 交互、动效与状态反馈
+scope: ui
+files: ["src/**/*"]
+priority: high
+---
+
+## 动效与时序
+- 帧率目标：60fps；过渡时间 150–250ms；进入比离开更慢（+30ms）。
+- 缓动：`ease-out`（进入）/ `ease-in`（离开）/ `ease-in-out`（复杂）。
+- Tailwind 示例：`transition-all duration-200 ease-out`。
+
+## 悬停/按压/焦点
+- hover：色彩或阴影微差异，不改变布局。
+- active：短暂压下（`scale-95`），避免影响阅读。
+- focus-visible：明显且与品牌一致的描边或外阴影，使用 `focus-visible:outline-none focus-visible:ring-2`。
+
+## 加载与提交
+- 按钮加载：显示 Spinner + 文案变化，禁用交互，`aria-busy=true`。
+- 页面加载：优先 Skeleton；超过 500ms 使用渐进指示器。
+
+## 错误与空状态
+- 错误：就地提示 + 可恢复建议；阻断性错误提供“重试”。
+- 空：提供用途说明、最小插画或图标、首要 CTA。
+
+## 键盘与可聚焦
+- 所有可交互元素可被 Tab 聚焦；顺序遵循视觉层级。
+- Esc 关闭弹层；Enter 提交；Space 触发 Button。
+
+## 滚动与内容密度
+- 避免滚动劫持；必要时局部滚动需可键盘访问。

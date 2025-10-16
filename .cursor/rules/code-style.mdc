@@ -1,0 +1,35 @@
+---
+mdc: 1
+title: 代码风格与架构（React + TypeScript + Tailwind）
+scope: code
+files: ["src/**/*", "eslint.config.js", "tsconfig*.json"]
+priority: high
+---
+
+## TypeScript
+- 显式导出类型；公共 API 要有类型注解。
+- 禁止 `any` 与类型断言滥用；使用窄化与守卫。
+
+## 组件与状态
+- 组件文件夹每文件单一职责；避免超 300 行。
+- 优先函数组件 + hooks；复杂逻辑提取到 `hooks/`。
+- 受控组件优先；表单统一 `react-hook-form`。
+
+## Tailwind
+- 类名顺序：布局 > 尺寸 > 间距 > 排版 > 颜色 > 特效 > 状态。
+- 使用语义色 `bg-background text-foreground` 等，避免硬编码色值。
+- 复用样式请用 `cn()` 或 `cva`，避免重复字符串。
+
+## 命名
+- 组件 `PascalCase`，hooks `useXxx`，文件与导出同名。
+- 变量名语义化，拒绝缩写；布尔以 `is/has/should` 开头。
+
+## 异常与日志
+- 少用 try/catch；必要时提供用户可恢复路径与上报。
+- 日志使用统一工具，避免 `console.*` 遗留。
+
+## 导入顺序
+- 第三方 > 别名 `@/...` > 相对路径；分组之间空行。
+
+## 测试（可选）
+- 关键逻辑与 hooks 提供单测；组件交互提供基本测试。

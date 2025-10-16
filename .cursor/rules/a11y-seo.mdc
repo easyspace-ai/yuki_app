@@ -1,0 +1,49 @@
+---
+mdc: 1
+title: 可访问性（WCAG 2.1 AA）与 SEO 规范
+scope: ui
+files: ["src/**/*", "index.html", "public/**/*"]
+priority: high
+---
+
+## 语义与结构
+- 使用语义标签：`header/main/nav/section/article/aside/footer`。
+- 标题层级：单一 `h1`；页面主区有且仅有一个 `main`。
+- 表单：`label` 对应 `id`，或提供 `aria-label`；错误用 `aria-live="polite"`。
+
+## 键盘可用性
+- 所有可交互元素可通过 Tab 聚焦；使用 `:focus-visible` 样式。
+- 弹层需焦点陷阱与焦点归还。
+
+## ARIA
+- 仅在语义不足时使用 ARIA；勿滥用。
+- 常用：`role="dialog"` `aria-modal` `aria-labelledby` `aria-describedby`。
+
+## 对比度与状态
+- 文本对比度≥4.5:1；次要文本≥3:1。
+- 加载/错误/成功使用视觉+文本双通道反馈。
+
+## 媒体
+- 图片：必须提供 `alt`；装饰性图片使用空 `alt=""`。
+- 图标：`aria-hidden` 或提供 `aria-label` 的可见文本。
+
+## 国际化
+- `html[lang]` 正确；日期/数字按区域格式化。
+
+## SEO 基线
+- 标题 `<title>` 与 `<meta name="description">` 必填，长度受控。
+- 结构化数据（可选）：`application/ld+json`（Breadcrumb、Article、Product）。
+- 链接：清晰可读的锚文本；外链 `rel="noopener"`。
+- 图片：`width/height` 明确，支持 `loading="lazy"`。
+
+## 示例（对话框语义）
+```tsx
+<Dialog>
+  <DialogContent aria-describedby="dialog-desc">
+    <DialogHeader>
+      <DialogTitle>新建文件</DialogTitle>
+      <DialogDescription id="dialog-desc">输入名称并选择位置。</DialogDescription>
+    </DialogHeader>
+  </DialogContent>
+</Dialog>
+```

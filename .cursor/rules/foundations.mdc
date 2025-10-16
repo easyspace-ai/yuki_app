@@ -1,0 +1,31 @@
+---
+mdc: 1
+title: 设计基础与系统（shadcn + Tailwind）
+scope: ui
+files: ["src/**/*", "tailwind.config.ts"]
+priority: high
+---
+
+## 设计令牌（Design Tokens）
+- 颜色：遵循 shadcn 色板与 CSS 变量：`--background` `--foreground` `--card` `--muted` `--accent` `--destructive` 等。
+- 间距：严格 8px 网格（4px 作为偶发微调）。Tailwind 使用 `p-2` `p-3` `p-4` 等倍数。
+- 圆角：默认 `rounded-md`（6px），容器 `rounded-lg`（8px），大卡片/弹窗 `rounded-xl`（12px）。
+- 阴影：浅层 `shadow-sm`，交互强调 `shadow`，高层浮层 `shadow-lg`；避免过度。
+- 字体：系统 sans（Inter/Ui Sans），字重 400/500/600；行高依内容密度采用 `leading-5/6/7`。
+- 图标：使用 Lucide 图标，线性 1.5px，尺寸 16/20/24。
+
+## 布局与栅格
+- 宽度断点：sm 640 / md 768 / lg 1024 / xl 1280 / 2xl 1536。
+- 容器：使用 `container mx-auto px-4 md:px-6`。
+- 列表/表格：移动端纵向滚动优先；桌面支持列控件与批量交互。
+
+## 主题与暗色模式
+- 优先使用 `:root` + `data-theme` 或 `class="dark"` 切换；变量通过 `tailwind.config.ts` 读取。
+- 对比度：文本与背景≥ 4.5:1；禁用文本≥ 3:1。
+
+## 语气与密度
+- UI 密度默认中性，避免拥挤；高频操作区域可以微缩紧凑。
+
+## 禁止事项
+- 直接写死颜色值，必须通过 CSS 变量或 Tailwind 语义色。
+- 随意自定义阴影/圆角且与系统不一致。

@@ -1,0 +1,46 @@
+---
+mdc: 1
+title: 组件使用规范（shadcn/ui）
+scope: ui
+files: ["src/components/**/*", "src/pages/**/*"]
+priority: high
+---
+
+## 总则
+- 优先复用 `src/components/ui/*` 的 shadcn 组件；禁止重复造轮子。
+- 组件命名：`PascalCase`；文件与导出一致，如 `Button.tsx` 导出 `Button`。
+- 变体：采用 `class-variance-authority (cva)` 或组件自带 `variant/size`，禁止魔法 class 拼接。
+
+## 常用组件约束
+- Button：语义 `variant`（default/secondary/destructive/ghost/link），加载态使用 `aria-busy` 与禁用。
+- Input/Textarea：必须有 `Label` 或 `aria-label`，错误文本使用 `FormMessage`。
+- Dialog/Sheet/Drawer：必须可键盘关闭（Esc）与焦点陷阱；标题 `DialogTitle` 必填。
+- Tooltip：延时 200ms 显示，触屏禁用或退化为说明文本。
+- Table：移动端横向滚动；桌面固定表头时保持可访问性（`scope="col"`）。
+- Tabs：`value` 受控；切换保持滚动位置或提供锚点。
+- Toast：避免滥用，生命周期 3–5s，可手动关闭。
+
+## 组合与容器
+- Card 作为信息容器；`CardHeader` 顶部对齐，`CardContent` 使用 8px 网格。
+- 表单：使用 `react-hook-form` + shadcn `Form` 模式；校验错误明确、友好。
+
+## 图标与插槽
+- 图标统一使用 `lucide-react`；可通过 `className="h-4 w-4"` 控制尺寸。
+
+## 空状态
+- 必须提供空、加载、错误状态组件；空状态包含操作引导（CTA）。
+
+## 示例（Button with Icon）
+```tsx
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+
+export function AddButton() {
+  return (
+    <Button variant="default" size="sm">
+      <Plus className="mr-2 h-4 w-4" aria-hidden />
+      新建
+    </Button>
+  );
+}
+```

@@ -1,0 +1,32 @@
+---
+mdc: 1
+title: 性能预算与质量闸门
+scope: performance
+files: ["src/**/*", "index.html", "vite.config.ts", "package.json"]
+priority: high
+---
+
+## 指标目标（开发环境近似）
+- LCP < 2.5s（桌面宽带），TTI < 3.5s，CLS < 0.1。
+- 交互响应 < 100ms；滚动/动画 60fps。
+
+## 资源预算
+- 初始 JS ≤ 180KB gzip；单页面增量 ≤ 80KB gzip。
+- 图片：优先 SVG/现代格式（webp/avif），大图懒加载与尺寸声明。
+
+## 打包与分割
+- 代码分割：路由级懒加载、第三方库分包。
+- 按需引入 shadcn 组件与图标；避免一次性引入全部图标集。
+
+## 网络与缓存
+- 使用 `Cache-Control`/ETag；静态资源指纹化。
+- Prefetch 低优先级路由，Preload 关键字体/首屏资源。
+
+## 渲染与状态
+- 避免深层级重渲染：使用 `memo/useMemo/useCallback`。
+- 虚拟化长列表；Skeleton 替代阻塞加载。
+
+## 质量闸门（建议在 CI 执行）
+- ESLint/TS 必须通过；构建无警告。
+- Bundle 体积阈值预警（如 `vite-bundle-visualizer`）。
+- Lighthouse 脚本化跑分：PWA 非必需，但性能分≥90。
